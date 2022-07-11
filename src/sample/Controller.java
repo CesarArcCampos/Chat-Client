@@ -24,7 +24,85 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ResourceBundle;
 
-public class Controller {
+public class Controller implements Initializable{
 
+    @FXML
+    private Button button_send;
+    @FXML
+    private TextField tf_message;
+    @FXML
+    private VBox vbox_messages;
+    @FXML
+    private ScrollPane sp_main;
+
+    private Client client;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+
+        try {
+            client = new Client(new Socket("localhost",1234));
+            System.out.println("Connected to Server");
+        }  catch (IOException e) {
+            System.out.println("Server is not connected");
+            e.printStackTrace();
+        }
+
+        vbox_messages.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
+                sp_main.setVvalue((Double) newValue);
+            }
+        });
+
+        client.receiveMessageFromServer(vbox_messages);
+
+        button_send.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String messageToSend = tf_message.getText();
+                if (!messageToSend.isEmpty()) {
+                    HBox hbox = new HBox();
+                    hbox.setAlignment(Pos.CENTER_RIGHT);
+
+                    hbox.setPadding(new Insets(5,5,5,10));
+                    Text text = new Text(messageToSend);
+                    TextFlow textFlow = new TextFlow(text);
+                    textFlow.setStyle("-fx-color: rgb(239,242,255); " +
+                            "-fx-background-color: rgb(15,125,242);" +
+                            " -fx-background-radius: 20px;");
+
+                    textFlow.setPadding(new Insets(5,10,5,10));
+                    text.setFill(Color.color(0.934,0.945,0.996));
+
+                    hbox.getChildren().add(textFlow);
+                    vbox_messages.getChildren().add(hbox);
+
+                    client.sendMessageToServer(messageToSend);
+                    tf_message.clear();
+                }
+            }
+        });
+    }
+
+    public static void addLabel(String messageFromServer, VBox vbox) {
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        hbox.setPadding(new Insets(5,5,5,10));
+
+        Text text = new Text(messageFromServer);
+        TextFlow textFlow = new TextFlow(text);
+        textFlow.setStyle("-fx-background-color: rgb(233,233,235);" +
+                " -fx-background-radius: 20px;");
+        textFlow.setPadding(new Insets(5,10,5,10));
+        hbox.getChildren().add(textFlow);
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                vbox.getChildren().add(hbox);
+            }
+        });
+    }
 
 }

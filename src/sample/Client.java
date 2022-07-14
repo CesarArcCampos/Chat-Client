@@ -11,7 +11,7 @@ public class Client {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
 
-    public Client(Socket socket) {
+    public void connectionSocket(Socket socket) {
         try {
             this.socket = socket;
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -41,8 +41,8 @@ public class Client {
             public void run() {
                 while (socket.isConnected()) {
                     try {
-                        String messageFromServer = bufferedReader.readLine();
-                        Controller.addLabel(messageFromServer, vBox);
+                            String messageFromServer = bufferedReader.readLine();
+                            Controller.addLabel(messageFromServer, vBox);
                     } catch (IOException e) {
                         e.printStackTrace();
                         System.out.println("Failed to receive message from Server");
@@ -68,6 +68,16 @@ public class Client {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void closeSocket(Socket socket) {
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

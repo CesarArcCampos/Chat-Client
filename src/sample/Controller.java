@@ -1,6 +1,8 @@
 package sample;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -12,6 +14,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -35,19 +38,44 @@ public class Controller implements Initializable{
     private VBox vbox_messages;
     @FXML
     private ScrollPane sp_main;
+    @FXML
+    private Button button_close;
+    @FXML
+    private Button button_connect;
+    @FXML
+    private ToggleButton tbutton;
+
+    @FXML
+    private final StringProperty textValue = new SimpleStringProperty("Connect");
 
     private Client client;
+    private Socket socket;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        try {
-            client = new Client(new Socket("localhost",1234));
-            System.out.println("Connected to Server");
-        }  catch (IOException e) {
-            System.out.println("Server is not connected");
-            e.printStackTrace();
-        }
+        client = new Client();
+
+        tbutton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                setTextValue("Disconnect");
+                tbutton.requestLayout();
+                try {
+                    socket = new Socket("localhost",1234);
+                    client.connectionSocket(socket);
+                    System.out.println("Client is connected to Server");
+                    client.receiveMessageFromServer(vbox_messages);
+                }  catch (IOException e) {
+                    System.out.println("Server is not connected");
+                    serverNotConnectedMessage(vbox_messages);
+                    //e.printStackTrace();
+                }
+            } else {
+                setTextValue("Connect");
+                tbutton.requestLayout();
+                client.closeSocket(socket);
+            }
+        });
 
         vbox_messages.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -56,14 +84,35 @@ public class Controller implements Initializable{
             }
         });
 
-        client.receiveMessageFromServer(vbox_messages);
-
         tf_message.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent ke) {
                 if (ke.getCode().equals(KeyCode.ENTER)) {
                     setMessageEvent();
                 }
+            }
+        });
+
+        /*button_connect.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try {
+                    client.connectionSocket(new Socket("localhost",1234));
+                    System.out.println("Client is connected to Server");
+                    client.receiveMessageFromServer(vbox_messages);
+                }  catch (IOException e) {
+                    System.out.println("Server is not connected");
+                    serverNotConnectedMessage(vbox_messages);
+                    //e.printStackTrace();
+                }
+            }
+        });*/
+
+        button_close.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Platform.exit();
+                System.exit(0);
             }
         });
 
@@ -119,4 +168,27 @@ public class Controller implements Initializable{
             tf_message.clear();
         }
     }
+
+    private void serverNotConnectedMessage(VBox vbox) {
+        String messageToSend = "Server is not connected!";
+
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(5,5,5,10));
+
+        Text text = new Text(messageToSend);
+        TextFlow textFlow = new TextFlow(text);
+        textFlow.setStyle("-fx-background-color: rgb(233,233,235);" +
+                " -fx-background-radius: 20px;");
+        hbox.getChildren().add(textFlow);
+        vbox.getChildren().add(hbox);
+    }
+
+    public String getTextValue() {
+        return textValue.get();
+    }
+
+    public void setTextValue(String textValue) {
+        this.textValue.set(textValue);
+    }
+
 }

@@ -41,8 +41,6 @@ public class Controller implements Initializable{
     @FXML
     private Button button_close;
     @FXML
-    private Button button_connect;
-    @FXML
     private ToggleButton tbutton;
 
     @FXML
@@ -50,32 +48,48 @@ public class Controller implements Initializable{
 
     private Client client;
     private Socket socket;
+    private final int port = 1234;
+    private boolean flag = true;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         client = new Client();
 
-        tbutton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                setTextValue("Disconnect");
-                tbutton.requestLayout();
-                try {
-                    socket = new Socket("localhost",1234);
-                    client.connectionSocket(socket);
-                    System.out.println("Client is connected to Server");
-                    client.receiveMessageFromServer(vbox_messages);
-                }  catch (IOException e) {
-                    System.out.println("Server is not connected");
-                    serverNotConnectedMessage(vbox_messages);
-                    //e.printStackTrace();
+        if (flag) {
+            tbutton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue) {
+                    setTextValue("Disconnect");
+                    tbutton.requestLayout();
+                    try {
+                        socket = new Socket("localhost",port);
+                        client.connectionSocket(socket);
+                        System.out.println("> Client is connected to Server");
+                        client.receiveMessageFromServer(vbox_messages);
+                    }  catch (IOException e) {
+                        System.out.println("> Server is not connected");
+                        serverNotConnectedMessage(vbox_messages);
+                        //e.printStackTrace();
+                    }
+                } else {
+                    setTextValue("Connect");
+                    tbutton.requestLayout();
+                    clientNotConnectedMessage(vbox_messages);
+                    messageToCloseServerSocket();
+                    client.closeSocket(socket);
+                    flag = false;
                 }
-            } else {
-                setTextValue("Connect");
-                tbutton.requestLayout();
-                client.closeSocket(socket);
-            }
-        });
+            });
+        }
+
+        if (!flag) {
+            tbutton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue) {
+                    flag = true;
+                    initialize(url, resourceBundle);
+                }
+            });
+        }
 
         vbox_messages.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -92,21 +106,6 @@ public class Controller implements Initializable{
                 }
             }
         });
-
-        /*button_connect.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                try {
-                    client.connectionSocket(new Socket("localhost",1234));
-                    System.out.println("Client is connected to Server");
-                    client.receiveMessageFromServer(vbox_messages);
-                }  catch (IOException e) {
-                    System.out.println("Server is not connected");
-                    serverNotConnectedMessage(vbox_messages);
-                    //e.printStackTrace();
-                }
-            }
-        });*/
 
         button_close.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -169,8 +168,27 @@ public class Controller implements Initializable{
         }
     }
 
+    private void messageToCloseServerSocket() {
+        String message = "Code:1234";
+        client.sendMessageToServer(message);
+    }
+
     private void serverNotConnectedMessage(VBox vbox) {
         String messageToSend = "Server is not connected!";
+
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(5,5,5,10));
+
+        Text text = new Text(messageToSend);
+        TextFlow textFlow = new TextFlow(text);
+        textFlow.setStyle("-fx-background-color: rgb(233,233,235);" +
+                " -fx-background-radius: 20px;");
+        hbox.getChildren().add(textFlow);
+        vbox.getChildren().add(hbox);
+    }
+
+    private void clientNotConnectedMessage(VBox vbox) {
+        String messageToSend = "Client is not connected!";
 
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(5,5,5,10));

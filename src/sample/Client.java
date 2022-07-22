@@ -17,7 +17,7 @@ public class Client {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (IOException e) {
-            System.out.println("Failed to create Client");
+            System.out.println("> Failed to create Client");
             e.printStackTrace();
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
@@ -30,7 +30,7 @@ public class Client {
             bufferedWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Failed to send message to Server");
+            System.out.println("> Failed to send message to Server");
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
@@ -41,11 +41,10 @@ public class Client {
             public void run() {
                 while (socket.isConnected()) {
                     try {
-                            String messageFromServer = bufferedReader.readLine();
-                            Controller.addLabel(messageFromServer, vBox);
+                        String messageFromServer = bufferedReader.readLine();
+                        Controller.addLabel(messageFromServer, vBox);
                     } catch (IOException e) {
-                        e.printStackTrace();
-                        System.out.println("Failed to receive message from Server");
+                        System.out.println("> Connection socket is closed.");
                         closeEverything(socket, bufferedReader, bufferedWriter);
                         break;
                     }

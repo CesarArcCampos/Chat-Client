@@ -29,8 +29,8 @@ public class Client {
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("> Failed to send message to Server");
+            //e.printStackTrace();
+            System.out.println("> Failed to send message to Server. Stream closed.");
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }

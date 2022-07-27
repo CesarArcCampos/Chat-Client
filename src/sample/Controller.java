@@ -64,17 +64,17 @@ public class Controller implements Initializable{
                     try {
                         socket = new Socket("localhost",port);
                         client.connectionSocket(socket);
-                        System.out.println("> Client is connected to Server");
+                        System.out.println("> Client is connected to Server.");
+                        automaticMessages(vbox_messages, "Client is connected to Server!");
                         client.receiveMessageFromServer(vbox_messages);
                     }  catch (IOException e) {
                         System.out.println("> Server is not connected");
-                        serverNotConnectedMessage(vbox_messages);
-                        //e.printStackTrace();
+                        automaticMessages(vbox_messages, "Server is not connected!");
                     }
                 } else {
                     setTextValue("Connect");
                     tbutton.requestLayout();
-                    clientNotConnectedMessage(vbox_messages);
+                    automaticMessages(vbox_messages, "Client is not connected!");
                     messageToCloseServerSocket();
                     client.closeSocket(socket);
                     flag = false;
@@ -173,32 +173,20 @@ public class Controller implements Initializable{
         client.sendMessageToServer(message);
     }
 
-    private void serverNotConnectedMessage(VBox vbox) {
-        String messageToSend = "Server is not connected!";
+    public void automaticMessages(VBox vBox, String message) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                HBox hbox = new HBox();
+                hbox.setPadding(new Insets(5,5,5,10));
 
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(5,5,5,10));
-
-        Text text = new Text(messageToSend);
-        TextFlow textFlow = new TextFlow(text);
-        textFlow.setStyle("-fx-background-color: rgb(233,233,235);" +
-                " -fx-background-radius: 20px;");
-        hbox.getChildren().add(textFlow);
-        vbox.getChildren().add(hbox);
-    }
-
-    private void clientNotConnectedMessage(VBox vbox) {
-        String messageToSend = "Client is not connected!";
-
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(5,5,5,10));
-
-        Text text = new Text(messageToSend);
-        TextFlow textFlow = new TextFlow(text);
-        textFlow.setStyle("-fx-background-color: rgb(233,233,235);" +
-                " -fx-background-radius: 20px;");
-        hbox.getChildren().add(textFlow);
-        vbox.getChildren().add(hbox);
+                Text text = new Text(message);
+                text.setFill(Color.BLUE);
+                TextFlow textFlow = new TextFlow(text);
+                hbox.getChildren().add(textFlow);
+                vBox.getChildren().add(hbox);
+            }
+        });
     }
 
     public String getTextValue() {

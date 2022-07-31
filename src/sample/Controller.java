@@ -23,6 +23,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
@@ -47,7 +49,7 @@ public class Controller implements Initializable{
     private final StringProperty textValue = new SimpleStringProperty("Connect");
 
     private Client client;
-    private Socket socket;
+    private SSLSocket socket;
     private final int port = 1234;
     private boolean flag = true;
 
@@ -62,7 +64,10 @@ public class Controller implements Initializable{
                     setTextValue("Disconnect");
                     tbutton.requestLayout();
                     try {
-                        socket = new Socket("localhost",port);
+                        //socket = new Socket("localhost",port);
+                        socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket("localhost",port);
+                        //socket.setEnabledCipherSuites(new String[] {"SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA"});
+
                         client.connectionSocket(socket);
                         System.out.println("> Client is connected to Server.");
                         automaticMessages(vbox_messages, "Client is connected to Server!");

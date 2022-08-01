@@ -51,6 +51,7 @@ public class Controller implements Initializable{
     private Client client;
     private SSLSocket socket;
     private final int port = 1234;
+    private final String localhost = "127.0.0.1";
     private boolean flag = true;
 
     @Override
@@ -64,7 +65,7 @@ public class Controller implements Initializable{
                     setTextValue("Disconnect");
                     tbutton.requestLayout();
                     try {
-                        socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket("localhost",port);
+                        socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(localhost,port);
                         client.connectionSocket(socket);
                         System.out.println("> Client is connected to Server.");
                         automaticMessages(vbox_messages, "Client is connected to Server!");

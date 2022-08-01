@@ -34,7 +34,10 @@ public class Encryption {
     }
 
     public String decrypt(String message) {
-        letters = message.toCharArray();
+
+        if (message != null) {
+            letters = message.toCharArray();
+        }
 
         for (int i = 0; i < letters.length; i++) {
             for (int j = 0; j < shuffledList.size(); j++) {

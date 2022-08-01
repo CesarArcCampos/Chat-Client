@@ -64,10 +64,7 @@ public class Controller implements Initializable{
                     setTextValue("Disconnect");
                     tbutton.requestLayout();
                     try {
-                        //socket = new Socket("localhost",port);
                         socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket("localhost",port);
-                        //socket.setEnabledCipherSuites(new String[] {"SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA"});
-
                         client.connectionSocket(socket);
                         System.out.println("> Client is connected to Server.");
                         automaticMessages(vbox_messages, "Client is connected to Server!");

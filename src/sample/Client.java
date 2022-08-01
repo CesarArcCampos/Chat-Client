@@ -4,19 +4,32 @@ import javafx.scene.layout.VBox;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Client {
 
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private final Encryption encryption;
+
+    public Client() {
+        encryption = new Encryption();
+    }
 
     public void connectionSocket(Socket socket) {
         try {
             this.socket = socket;
+            ArrayList<Character> key;
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+            Object object = objectInputStream.readObject();
+            key = (ArrayList<Character>) object;
+            encryption.setKey(key);
+            System.out.println("> Received encryption key from server.");
+
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             System.out.println("> Failed to create Client");
             e.printStackTrace();
             closeEverything(socket, bufferedReader, bufferedWriter);
@@ -25,7 +38,8 @@ public class Client {
 
     public void sendMessageToServer(String messageToServer) {
         try{
-            bufferedWriter.write(messageToServer);
+            String encryptedMessage = encryption.encrypt(messageToServer);
+            bufferedWriter.write(encryptedMessage);
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
@@ -41,7 +55,8 @@ public class Client {
             public void run() {
                 while (socket.isConnected()) {
                     try {
-                        String messageFromServer = bufferedReader.readLine();
+                        String encryptedMessage = bufferedReader.readLine();
+                        String messageFromServer = encryption.decrypt(encryptedMessage);
                         Controller.addLabel(messageFromServer, vBox);
                     } catch (IOException e) {
                         System.out.println("> Connection socket is closed.");
@@ -54,7 +69,6 @@ public class Client {
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
-
         try {
             if (bufferedReader != null) {
                 bufferedReader.close();
